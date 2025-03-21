@@ -48,6 +48,19 @@ def verify_polynomial(list_x, list_y, dd):
         print(
             f"x[{i}] = {list_x[i]:.6f}, P(x) = {p_val:.6f}, f(x) = {list_y[i]:.6f}, Error = {abs(p_val - list_y[i]):.6e}")
 
+def max_derivative(n, x_range):
+    return np.exp(max(x_range))
+
+def theoretical_error(n, x, list_x, x_range):
+    product_term = (np.prod([(x - xi) for xi in list_x]))
+    extended_list_x = np.append(list_x, x)
+    extended_list_y = original_function(extended_list_x)
+    dd_extended = divided_differences(extended_list_x, extended_list_y)
+
+    f_x_x0_xn = dd_extended[0, n + 1]
+
+    return f_x_x0_xn * product_term
+
 
 A, B, N = -2, 4, 4
 list_x = np.array([(A + B) / 2 + ((B - A) / 2) * np.cos(np.pi * (2 * k + 1) / (2 * (N + 1))) for k in range(N + 1)])
@@ -67,6 +80,9 @@ x_vals = np.linspace(A, B, 10000)
 f_original = [original_function(x) for x in x_vals]
 f_newton = [newton_backward_polynomial(x, list_x, dd) for x in x_vals]
 error = [f_original[i] - f_newton[i] for i in range(len(x_vals))]
+
+theoretical_errors = [theoretical_error(N, x, list_x, (A, B)) for x in x_vals]
+
 
 plt.figure(figsize=(12, 8))
 
@@ -89,7 +105,7 @@ plt.legend()
 plt.grid()
 
 plt.subplot(2, 2, 3)
-n_values = range(2, 25)
+n_values = range(2, 100)
 max_errors = []
 for n in n_values:
     list_x = [(A + B) / 2 + ((B - A) / 2) * math.cos(math.pi * (2 * k + 1) / (2 * (n + 1))) for k in range(n + 1)]
@@ -106,6 +122,17 @@ plt.ylabel("Максимальная ошибка")
 plt.title("Зависимость максимальной ошибки от числа узлов")
 plt.legend()
 plt.grid()
+
+plt.subplot(2, 2, 4)
+plt.plot(x_vals, theoretical_errors, linestyle="dashed", label=f"Теоретическая ошибка")
+
+
+plt.xlabel("x")
+plt.ylabel("Ошибка интерполяции")
+
+plt.legend()
+plt.grid()
+
 
 plt.tight_layout()
 plt.show()
